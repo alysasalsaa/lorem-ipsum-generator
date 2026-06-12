@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lorem Ipsum Generator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #0f172a;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+      gap: 1.5rem;
+    }
+
+    header { text-align: center; }
+    header h1 { font-size: 1.75rem; font-weight: 700; }
+    header p  { font-size: 0.875rem; color: #94a3b8; margin-top: 0.25rem; }
+
+    .controls {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      width: 100%;
+      max-width: 620px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .controls label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+
+    input[type="number"] {
+      width: 80px;
+      background: #0f172a;
+      border: 1.5px solid #334155;
+      border-radius: 8px;
+      color: #f8fafc;
+      font-size: 1rem;
+      padding: 0.5rem 0.6rem;
+      text-align: center;
+      outline: none;
+      font-family: inherit;
+      transition: border-color 0.15s;
+    }
+    input[type="number"]:focus { border-color: #6366f1; }
+
+    .btn-generate {
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 0.55rem 1.4rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.15s, transform 0.08s;
+    }
+    .btn-generate:hover   { opacity: 0.88; }
+    .btn-generate:active  { transform: scale(0.97); }
+
+    .err-msg {
+      font-size: 0.78rem;
+      color: #ef4444;
+      width: 100%;
+      min-height: 1rem;
+    }
+
+    /* Output area */
+    .output-wrap {
+      width: 100%;
+      max-width: 620px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .output-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .output-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+
+    .btn-copy {
+      background: transparent;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #94a3b8;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.3rem 0.8rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.12s, color 0.12s;
+    }
+    .btn-copy:hover  { background: #1e293b; color: #f8fafc; }
+    .btn-copy.copied { background: #052e16; border-color: #22c55e; color: #86efac; }
+
+    .paragraphs {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .para-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      position: relative;
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    .para-num {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: #475569;
+      margin-bottom: 0.4rem;
+    }
+
+    .para-text {
+      font-size: 0.9rem;
+      line-height: 1.75;
+      color: #cbd5e1;
+    }
+
+    .para-copy {
+      position: absolute;
+      top: 10px; right: 10px;
+      background: transparent;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      color: #475569;
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 2px 7px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.12s;
+    }
+    .para-copy:hover  { background: #0f172a; color: #94a3b8; }
+    .para-copy.copied { border-color: #22c55e; color: #22c55e; }
+
+    .empty-state {
+      text-align: center;
+      color: #334155;
+      font-size: 0.875rem;
+      padding: 2rem;
+      background: #1e293b;
+      border: 1px dashed #334155;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Lorem Ipsum Generator</h1>
+    <p>Generate placeholder text for your designs and layouts</p>
+  </header>
+
+  <div class="controls">
+    <label for="para-count">Paragraphs</label>
+    <input type="number" id="para-count" value="3" min="1" max="20" />
+    <button class="btn-generate" onclick="generate()">Generate</button>
+    <span class="err-msg" id="err-msg"></span>
+  </div>
+
+  <div class="output-wrap" id="output-wrap" style="display:none">
+    <div class="output-header">
+      <span class="output-label" id="output-label">0 paragraphs</span>
+      <button class="btn-copy" id="btn-copy-all" onclick="copyAll()">Copy All</button>
+    </div>
+    <div class="paragraphs" id="paragraphs"></div>
+  </div>
+
+  <div class="empty-state" id="empty-state">
+    Enter a number and click Generate to create lorem ipsum text
+  </div>
+
+  <script>
+    // Lorem ipsum word bank
+    const WORDS = [
+      'lorem','ipsum','dolor','sit','amet','consectetur','adipiscing','elit',
+      'sed','do','eiusmod','tempor','incididunt','ut','labore','et','dolore',
+      'magna','aliqua','enim','ad','minim','veniam','quis','nostrud','exercitation',
+      'ullamco','laboris','nisi','aliquip','ex','ea','commodo','consequat',
+      'duis','aute','irure','in','reprehenderit','voluptate','velit','esse',
+      'cillum','eu','fugiat','nulla','pariatur','excepteur','sint','occaecat',
+      'cupidatat','non','proident','sunt','culpa','qui','officia','deserunt',
+      'mollit','anim','id','est','laborum','pellentesque','habitant','morbi',
+      'tristique','senectus','netus','malesuada','fames','turpis','egestas',
+      'venenatis','cras','ornare','arcu','dui','vivamus','arcu','felis','bibendum',
+      'neque','volutpat','ac','tincidunt','vitae','semper','quis','lectus',
+      'proin','sagittis','nisl','rhoncus','mattis','rhoncus','urna','neque',
+      'viverra','justo','nec','ultrices','dui','sapien','eget','mi','proin',
+      'sed','libero','enim','sed','faucibus','turpis','in','eu','mi','bibendum',
+    ];
+
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function randWord() {
+      return WORDS[Math.floor(Math.random() * WORDS.length)];
+    }
+
+    function makeSentence() {
+      const len = randInt(6, 16);
+      const words = Array.from({ length: len }, randWord);
+      words[0] = words[0].charAt(0).toUpperCase() + words[0].slice(1);
+      return words.join(' ') + '.';
+    }
+
+    function makeParagraph() {
+      const sentenceCount = randInt(4, 8);
+      return Array.from({ length: sentenceCount }, makeSentence).join(' ');
+    }
+
+    // First paragraph always starts with classic lorem ipsum
+    const CLASSIC_START = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.';
+
+    let allText = '';
+
+    function generate() {
+      const input  = document.getElementById('para-count');
+      const errMsg = document.getElementById('err-msg');
+      const count  = parseInt(input.value);
+
+      if (!count || count < 1 || count > 20) {
+        errMsg.textContent = 'Please enter a number between 1 and 20.';
+        return;
+      }
+      errMsg.textContent = '';
+
+      const container = document.getElementById('paragraphs');
+      container.innerHTML = '';
+
+      const paragraphs = [];
+      for (let i = 0; i < count; i++) {
+        paragraphs.push(i === 0 ? CLASSIC_START + ' ' + makeParagraph() : makeParagraph());
+      }
+
+      allText = paragraphs.join('\n\n');
+
+      paragraphs.forEach((text, idx) => {
+        const card = document.createElement('div');
+        card.className = 'para-card';
+        card.innerHTML = `
+          <div class="para-num">Paragraph ${idx + 1}</div>
+          <p class="para-text">${text}</p>
+          <button class="para-copy" onclick="copyPara(this, ${idx})">Copy</button>
+        `;
+        container.appendChild(card);
+      });
+
+      document.getElementById('output-label').textContent =
+        `${count} paragraph${count > 1 ? 's' : ''} generated`;
+      document.getElementById('output-wrap').style.display = 'flex';
+      document.getElementById('empty-state').style.display = 'none';
+      document.getElementById('btn-copy-all').textContent = 'Copy All';
+      document.getElementById('btn-copy-all').className = 'btn-copy';
+    }
+
+    function copyPara(btn, idx) {
+      const paras = allText.split('\n\n');
+      navigator.clipboard.writeText(paras[idx] || '').then(() => {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+      });
+    }
+
+    function copyAll() {
+      navigator.clipboard.writeText(allText).then(() => {
+        const btn = document.getElementById('btn-copy-all');
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy All'; btn.classList.remove('copied'); }, 1500);
+      });
+    }
+
+    // Generate on Enter key
+    document.getElementById('para-count').addEventListener('keydown', e => {
+      if (e.key === 'Enter') generate();
+    });
+
+    // Auto-generate on load
+    generate();
+  </script>
+</body>
+</html>
